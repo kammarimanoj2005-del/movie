@@ -1,0 +1,27 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>My Bookings</title>
+</head>
+<body>
+    <h1>Booking History 🎟️</h1>
+
+    {% if bookings %}
+        {% for booking in bookings %}
+            <hr>
+            <h3>{{ booking["movie_name"] }}</h3>
+            <p>Booking ID: {{ booking["booking_id"] }}</p>
+            <p>Showtime: {{ booking["showtime"] }}</p>
+            <p>Seats: {{ booking["seats"] }}</p>
+            <p>Total: ₹{{ booking["total"] }}</p>
+        {% endfor %}
+    {% else %}
+        <p>No bookings yet. Book a movie to see it here.</p>
+    {% endif %}
+
+    <p><a href="/">Back to home</a></p>
+</body>
+</html>

@@ -1,0 +1,245 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Movie Tickets</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #101018;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: 20px auto;
+            padding: 25px;
+            background: #20202c;
+            border-radius: 15px;
+        }
+
+        a {
+            color: #ff687e;
+        }
+
+        select {
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px;
+        }
+
+        .screen {
+            max-width: 400px;
+            margin: 30px auto;
+            padding: 12px;
+            background: #ddd;
+            color: #222;
+            border-radius: 50% 50% 5px 5px;
+        }
+
+        .seats {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 10px;
+            max-width: 350px;
+            margin: 25px auto;
+        }
+
+        .seat {
+            padding: 12px 4px;
+            border: none;
+            border-radius: 6px;
+            background: #444454;
+            color: white;
+            cursor: pointer;
+        }
+
+        .seat.selected {
+            background: #20b875;
+        }
+
+        .seat:disabled {
+            background: #d94a58;
+            cursor: not-allowed;
+        }
+
+        .book-button {
+            padding: 13px 25px;
+            border: none;
+            border-radius: 7px;
+            background: #ff4d67;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .message {
+            margin: 15px;
+            padding: 10px;
+            color: #ffd5d9;
+        }
+
+        .legend {
+            color: #ccc;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container">
+        <p><a href="/">← Back to movies</a></p>
+        <p><a href="/my-bookings">View all bookings</a></p>
+
+        <h1>{{ movie.name }}</h1>
+
+        <p>
+            Price per seat:
+            ₹<span id="ticket-price">{{ movie.price }}</span>
+        </p>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <p class="message">{{ message }}</p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <label for="showtime">Choose showtime:</label>
+
+        <select id="showtime" name="showtime">
+            {% for time in showtimes %}
+                <option
+                    value="{{ time }}"
+                    {% if time == selected_showtime %}selected{% endif %}
+                >
+                    {{ time }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <div class="screen">SCREEN THIS SIDE</div>
+
+        <p class="legend">
+            Grey = Available | Green = Selected | Red = Booked
+        </p>
+
+        <form method="POST" id="bookingForm">
+            <input
+                type="hidden"
+                name="showtime"
+                id="formShowtime"
+                value="{{ selected_showtime }}"
+            >
+
+            <div class="seats">
+                {% for row in ["A", "B", "C", "D"] %}
+                    {% for number in range(1, 6) %}
+                        {% set seat = row ~ number %}
+
+                        <button
+                            type="button"
+                            class="seat"
+                            data-seat="{{ seat }}"
+                            {% if seat in booked_seats %}disabled{% endif %}
+                        >
+                            {{ seat }}
+                        </button>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+
+            <input
+                type="hidden"
+                name="seats"
+                id="selectedSeats"
+                value=""
+            >
+
+            <h3>
+                Selected seats:
+                <span id="selected">None</span>
+            </h3>
+
+            <h2>
+                Total: ₹<span id="total">0</span>
+            </h2>
+
+            <button class="book-button" type="submit">
+                Confirm Booking
+            </button>
+        </form>
+    </main>
+
+    <script>
+        const priceElement = document.getElementById("ticket-price");
+        const price = Number(priceElement.textContent);
+
+        const selected = new Set();
+        const seatButtons = document.querySelectorAll(".seat");
+        const selectedText = document.getElementById("selected");
+        const totalText = document.getElementById("total");
+        const hiddenSeats = document.getElementById("selectedSeats");
+        const bookingForm = document.getElementById("bookingForm");
+        const showtimeSelect = document.getElementById("showtime");
+        const formShowtime = document.getElementById("formShowtime");
+
+        function updateBookingSummary() {
+            const seatNames = Array.from(selected);
+
+            selectedText.textContent =
+                seatNames.length > 0 ? seatNames.join(", ") : "None";
+
+            totalText.textContent = seatNames.length * price;
+            hiddenSeats.value = seatNames.join(",");
+        }
+
+        seatButtons.forEach(function (button) {
+            button.addEventListener("click", function () {
+                const seatName = button.dataset.seat;
+
+                if (selected.has(seatName)) {
+                    selected.delete(seatName);
+                    button.classList.remove("selected");
+                } else {
+                    selected.add(seatName);
+                    button.classList.add("selected");
+                }
+
+                updateBookingSummary();
+            });
+        });
+
+        showtimeSelect.addEventListener("change", function () {
+            const params = new URLSearchParams();
+            params.set("showtime", showtimeSelect.value);
+
+            window.location.href =
+                window.location.pathname + "?" + params.toString();
+        });
+
+        bookingForm.addEventListener("submit", function (event) {
+            if (selected.size === 0) {
+                event.preventDefault();
+                alert("Please select at least one seat.");
+                return;
+            }
+
+            formShowtime.value = showtimeSelect.value;
+            hiddenSeats.value = Array.from(selected).join(",");
+        });
+
+        updateBookingSummary();
+    </script>
+</body>
+</html>

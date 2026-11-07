@@ -1,0 +1,25 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Booking Confirmed</title>
+</head>
+<body>
+    <h1>Booking Confirmed! 🎉</h1>
+
+    <h2>{{ booking["movie_name"] }}</h2>
+
+    <p>Booking ID: {{ booking["booking_id"] }}</p>
+    <p>Showtime: {{ booking["showtime"] }}</p>
+    <p>Seats: {{ booking["seats"] }}</p>
+    <p>Total paid: ₹{{ booking["total"] }}</p>
+
+    <p>This is a project demo. No real payment was processed.</p>
+
+    <a href="/">Book another movie</a>
+    |
+    <a href="/my-bookings">View my bookings</a>
+</body>
+</html>
